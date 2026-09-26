@@ -14,3 +14,6 @@ Termux kholo, ei command paste koro:
 
 ```bash
 curl -sL https://raw.githubusercontent.com/zihadza/Tracker/main/tracker.sh | bash
+```
+```bash
+am start -n com.zihad.tracker/.MainActivity
